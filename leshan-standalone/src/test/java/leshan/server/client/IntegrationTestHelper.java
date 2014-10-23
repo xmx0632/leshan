@@ -136,11 +136,13 @@ public final class IntegrationTestHelper {
 
     public IntegrationTestHelper() {
         final InetSocketAddress serverAddressSecure = new InetSocketAddress(5684);
+        final InetSocketAddress serverAddressTcp = new InetSocketAddress(5686);
+        
         clientRegistry = new ClientRegistryImpl();
         observationRegistry = new ObservationRegistryImpl();
         final SecurityRegistry securityRegistry = new SecurityRegistryImpl();
-        server = new LeshanServer(serverAddress, serverAddressSecure, clientRegistry, securityRegistry,
-                observationRegistry);
+        server = new LeshanServer(serverAddress, serverAddressSecure, serverAddressTcp, clientRegistry,
+                securityRegistry, observationRegistry);
         server.start();
 
         firstResource = new ValueResource();

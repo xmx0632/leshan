@@ -44,72 +44,79 @@ import org.slf4j.LoggerFactory;
 
 public class LeshanMain {
 
-    private static final Logger LOG = LoggerFactory.getLogger(LeshanMain.class);
+	private static final Logger LOG = LoggerFactory.getLogger(LeshanMain.class);
 
-    private Server server;
-    private LeshanServer lwServer;
+	private Server server;
+	private LeshanServer lwServer;
 
-    public void start() {
-        // use those ENV variables for specifying the interface to be bound for coap and coaps
-        String iface = System.getenv("COAPIFACE");
-        String ifaces = System.getenv("COAPSIFACE");
+	public void start() {
+		// use those ENV variables for specifying the interface to be bound for
+		// coap and coaps
+		String iface = System.getenv("COAPIFACE");
+		String ifaces = System.getenv("COAPSIFACE");
 
-        // LWM2M server
-        if (iface == null || iface.isEmpty() || ifaces == null || ifaces.isEmpty()) {
-            lwServer = new LeshanServer();
-        } else {
-            String[] add = iface.split(":");
-            String[] adds = ifaces.split(":");
-            // user specified the iface to be bound
-            lwServer = new LeshanServer(new InetSocketAddress(add[0], Integer.parseInt(add[1])),
-                    new InetSocketAddress(adds[0], Integer.parseInt(adds[1])));
-        }
-        lwServer.start();
+		// LWM2M server
+		if (iface == null || iface.isEmpty() || ifaces == null
+				|| ifaces.isEmpty()) {
+			lwServer = new LeshanServer();
+		} else {
+			String[] add = iface.split(":");
+			String[] adds = ifaces.split(":");
+			// user specified the iface to be bound
+			lwServer = new LeshanServer(new InetSocketAddress(add[0],
+					Integer.parseInt(add[1])), new InetSocketAddress(adds[0],
+					Integer.parseInt(adds[1])), new InetSocketAddress(adds[0],
+					Integer.parseInt(adds[2])), "nothing");
+		}
+		lwServer.start();
 
-        // now prepare and start jetty
-        String webPort = System.getenv("PORT");
-        if (webPort == null || webPort.isEmpty()) {
-            webPort = System.getProperty("PORT");
-        }
-        if (webPort == null || webPort.isEmpty()) {
-            webPort = "8080";
-        }
-        server = new Server(Integer.valueOf(webPort));
-        WebAppContext root = new WebAppContext();
-        root.setContextPath("/");
-        root.setResourceBase(this.getClass().getClassLoader().getResource("webapp").toExternalForm());
-        root.setParentLoaderPriority(true);
-        server.setHandler(root);
+		// now prepare and start jetty
+		String webPort = System.getenv("PORT");
+		if (webPort == null || webPort.isEmpty()) {
+			webPort = System.getProperty("PORT");
+		}
+		if (webPort == null || webPort.isEmpty()) {
+			webPort = "8080";
+		}
+		server = new Server(Integer.valueOf(webPort));
+		WebAppContext root = new WebAppContext();
+		root.setContextPath("/");
+		root.setResourceBase(this.getClass().getClassLoader()
+				.getResource("webapp").toExternalForm());
+		root.setParentLoaderPriority(true);
+		server.setHandler(root);
 
-        // Create Servlet
-        EventServlet eventServlet = new EventServlet(lwServer);
-        ServletHolder eventServletHolder = new ServletHolder(eventServlet);
-        root.addServlet(eventServletHolder, "/event/*");
+		// Create Servlet
+		EventServlet eventServlet = new EventServlet(lwServer);
+		ServletHolder eventServletHolder = new ServletHolder(eventServlet);
+		root.addServlet(eventServletHolder, "/event/*");
 
-        ServletHolder clientServletHolder = new ServletHolder(new ClientServlet(lwServer));
-        root.addServlet(clientServletHolder, "/api/clients/*");
+		ServletHolder clientServletHolder = new ServletHolder(
+				new ClientServlet(lwServer));
+		root.addServlet(clientServletHolder, "/api/clients/*");
 
-        ServletHolder securityServletHolder = new ServletHolder(new SecurityServlet(lwServer.getSecurityRegistry()));
-        root.addServlet(securityServletHolder, "/api/security/*");
+		ServletHolder securityServletHolder = new ServletHolder(
+				new SecurityServlet(lwServer.getSecurityRegistry()));
+		root.addServlet(securityServletHolder, "/api/security/*");
 
-        // Start jetty
-        try {
-            server.start();
-        } catch (Exception e) {
-            LOG.error("jetty error", e);
-        }
-    }
+		// Start jetty
+		try {
+			server.start();
+		} catch (Exception e) {
+			LOG.error("jetty error", e);
+		}
+	}
 
-    public void stop() {
-        try {
-            lwServer.destroy();
-            server.stop();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+	public void stop() {
+		try {
+			lwServer.destroy();
+			server.stop();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-    public static void main(String[] args) {
-        new LeshanMain().start();
-    }
+	public static void main(String[] args) {
+		new LeshanMain().start();
+	}
 }

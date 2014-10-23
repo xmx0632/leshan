@@ -37,6 +37,8 @@ import java.util.Set;
 import leshan.server.lwm2m.client.Client;
 import leshan.server.lwm2m.client.ClientRegistry;
 import leshan.server.lwm2m.client.ClientRegistryListener;
+import leshan.server.lwm2m.ext.TCPCoAPEndpoint;
+import leshan.server.lwm2m.ext.TCPConnector;
 import leshan.server.lwm2m.impl.ClientRegistryImpl;
 import leshan.server.lwm2m.impl.ObservationRegistryImpl;
 import leshan.server.lwm2m.impl.californium.CaliforniumLwM2mRequestSender;
@@ -57,6 +59,7 @@ import org.apache.commons.lang.Validate;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoAPEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,6 +85,9 @@ public class LeshanServer implements LwM2mServer {
 
     /** IANA assigned UDP port for CoAP with DTLS (so for LWM2M) */
     public static final int PORT_DTLS = 5684;
+    
+    /** IANA assigned TCP port for CoAP (so for LWM2M) */
+    public static final int PORT_TCP = 5686;
 
     private final LwM2mRequestSender requestSender;
 
@@ -103,9 +109,10 @@ public class LeshanServer implements LwM2mServer {
      * 
      * @param localAddress the address to bind the CoAP server.
      * @param localAddressSecure the address to bind the CoAP server for DTLS connection.
+     * @param localAddressTcp TODO
      */
-    public LeshanServer(InetSocketAddress localAddress, InetSocketAddress localAddressSecure) {
-        this(localAddress, localAddressSecure, null, null, null);
+    public LeshanServer(InetSocketAddress localAddress, InetSocketAddress localAddressSecure, InetSocketAddress localAddressTcp,String nothing) {
+        this(localAddress, localAddressSecure, localAddressTcp, null, null, null);
     }
 
     /**
@@ -114,7 +121,7 @@ public class LeshanServer implements LwM2mServer {
     public LeshanServer(ClientRegistry clientRegistry, SecurityRegistry securityRegistry,
             ObservationRegistry observationRegistry) {
         this(new InetSocketAddress((InetAddress) null, PORT), new InetSocketAddress((InetAddress) null, PORT_DTLS),
-                clientRegistry, securityRegistry, observationRegistry);
+        		new InetSocketAddress((InetAddress) null, PORT_TCP), clientRegistry, securityRegistry, observationRegistry);
     }
 
     /**
@@ -122,9 +129,10 @@ public class LeshanServer implements LwM2mServer {
      * 
      * @param localAddress the address to bind the CoAP server.
      * @param localAddressSecure the address to bind the CoAP server for DTLS connection.
+     * @param localAddressTcp TODO
      */
     public LeshanServer(InetSocketAddress localAddress, InetSocketAddress localAddressSecure,
-            ClientRegistry clientRegistry, SecurityRegistry securityRegistry, ObservationRegistry observationRegistry) {
+            InetSocketAddress localAddressTcp, ClientRegistry clientRegistry, SecurityRegistry securityRegistry, ObservationRegistry observationRegistry) {
         Validate.notNull(localAddress, "IP address cannot be null");
         Validate.notNull(localAddressSecure, "Secure IP address cannot be null");
 
@@ -172,6 +180,11 @@ public class LeshanServer implements LwM2mServer {
 
         Endpoint secureEndpoint = new SecureEndpoint(connector);
         coapServer.addEndpoint(secureEndpoint);
+        
+        // TODO init TCP server
+        TCPConnector tcpConnector = new TCPConnector(localAddressTcp);
+        Endpoint tcpEndpoint = new TCPCoAPEndpoint(tcpConnector,NetworkConfig.getStandard());
+        coapServer.addEndpoint(tcpEndpoint);
 
         // define /rd resource
         RegisterResource rdResource = new RegisterResource(this.clientRegistry, this.securityRegistry);
@@ -181,6 +194,7 @@ public class LeshanServer implements LwM2mServer {
         Set<Endpoint> endpoints = new HashSet<>();
         endpoints.add(endpoint);
         endpoints.add(secureEndpoint);
+        endpoints.add(tcpEndpoint);
         requestSender = new CaliforniumLwM2mRequestSender(endpoints, this.observationRegistry);
     }
 
