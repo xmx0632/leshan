@@ -37,6 +37,7 @@ import java.util.Set;
 import leshan.server.lwm2m.client.Client;
 import leshan.server.lwm2m.client.ClientRegistry;
 import leshan.server.lwm2m.client.ClientRegistryListener;
+import leshan.server.lwm2m.ext.CoAPEndpoint;
 import leshan.server.lwm2m.ext.TCPCoAPEndpoint;
 import leshan.server.lwm2m.ext.TCPConnector;
 import leshan.server.lwm2m.impl.ClientRegistryImpl;
@@ -57,7 +58,6 @@ import leshan.server.lwm2m.security.SecurityRegistry;
 
 import org.apache.commons.lang.Validate;
 import org.eclipse.californium.core.CoapServer;
-import org.eclipse.californium.core.network.CoAPEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.scandium.DTLSConnector;

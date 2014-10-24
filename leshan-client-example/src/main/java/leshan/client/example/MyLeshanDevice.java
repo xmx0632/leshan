@@ -40,6 +40,7 @@ import java.util.TimeZone;
 import java.util.UUID;
 
 import leshan.client.lwm2m.LwM2mClient;
+import leshan.client.lwm2m.MyLwM2mClient;
 import leshan.client.lwm2m.exchange.LwM2mExchange;
 import leshan.client.lwm2m.register.RegisterUplink;
 import leshan.client.lwm2m.resource.LwM2mClientObjectDefinition;
@@ -59,13 +60,14 @@ import leshan.client.lwm2m.response.OperationResponse;
  * To use:
  * java -jar target/leshan-client-*-SNAPSHOT-jar-with-dependencies.jar 127.0.0.1 5683 9000
  */
-public class LeshanDevice {
+public class MyLeshanDevice {
     private static final int TIMEOUT_MS = 2000;
     private static String deviceLocation;
     private static RegisterUplink registerUplink;
 
     public static void main(final String[] args) {
-    	new LeshanDevice("127.0.0.1", 55663, "127.0.0.1", 5683);
+    	boolean isTcp = true;
+		new MyLeshanDevice("127.0.0.1", 55663, "127.0.0.1", 5683, isTcp);
     	
 //        if (args.length < 4) {
 //            System.out
@@ -75,10 +77,10 @@ public class LeshanDevice {
 //        }
     }
 
-    public LeshanDevice(final String localHostName, final int localPort, final String serverHostName,
-            final int serverPort) {
+    public MyLeshanDevice(final String localHostName, final int localPort, final String serverHostName,
+            final int serverPort, boolean isTcp) {
         final LwM2mClientObjectDefinition objectDevice = createObjectDefinition();
-        final LwM2mClient client = new LwM2mClient(objectDevice);
+        final MyLwM2mClient client = new MyLwM2mClient(isTcp, objectDevice);
 
         // Connect to the server provided
         final InetSocketAddress clientAddress = new InetSocketAddress(localHostName, localPort);

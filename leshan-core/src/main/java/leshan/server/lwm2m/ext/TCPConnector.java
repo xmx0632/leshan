@@ -196,15 +196,30 @@ public class TCPConnector implements Connector {
 		protected void work() throws IOException {
 
 			byte[] bytes = input2byte(clientConnection.getInputStream());
+			printBytes(bytes);
 			RawData msg = new RawData(bytes);
 			InetAddress inetAddress = clientConnection.getInetAddress();
-			System.out.println("inetAddress:" + inetAddress);
+			LOGGER.info("inetAddress:" + inetAddress);
 			msg.setAddress(inetAddress);
 			int port = clientConnection.getPort();
 			System.out.println("ppp:" + port);
 			msg.setPort(port);
+			String message  =  new String(bytes);
+			LOGGER.info("msg:" + message);
 
 			receiver.receiveData(msg);
+		}
+
+		private void printBytes(byte[] bytes) {
+			StringBuilder ss = new StringBuilder();
+			for (int i = 0; i < bytes.length; i++) {
+				byte b = bytes[i];
+				ss.append(b);
+				if(i!=bytes.length-1){
+					ss.append(",");
+				}
+			}
+			LOGGER.info("bytes==" + ss);
 		}
 
 		public byte[] input2byte(InputStream inStream) throws IOException {
@@ -233,6 +248,20 @@ public class TCPConnector implements Connector {
 			byte[] bytes = raw.getBytes();
 			OutputStream outputStream = clientConnection.getOutputStream();
 			outputStream.write(bytes);
+			
+			if(outputStream !=null){
+				try {
+					outputStream.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			if(clientConnection!=null){
+				try {
+					clientConnection.close();
+				} catch (Exception e) {
+				}
+			}
 		}
 	}
 
