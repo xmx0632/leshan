@@ -91,9 +91,17 @@ public class TCPConnector implements Connector {
 
 				receiver.join();
 				sender.join();
-			} catch (InterruptedException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} finally {
+				if (connectionSocket != null) {
+					try {
+						connectionSocket.close();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
 			}
 
 		}
@@ -195,7 +203,8 @@ public class TCPConnector implements Connector {
 
 		protected void work() throws IOException {
 
-			byte[] bytes = input2byte(clientConnection.getInputStream());
+//			byte[] bytes = input2byte(clientConnection.getInputStream());
+			byte[] bytes = udpBytes();
 			printBytes(bytes);
 			RawData msg = new RawData(bytes);
 			InetAddress inetAddress = clientConnection.getInetAddress();
@@ -204,33 +213,38 @@ public class TCPConnector implements Connector {
 			int port = clientConnection.getPort();
 			System.out.println("ppp:" + port);
 			msg.setPort(port);
-			String message  =  new String(bytes);
-			LOGGER.info("msg:" + message);
+			// String message = new String(bytes);
+			// LOGGER.info("msg:" + message);
 
 			receiver.receiveData(msg);
 		}
 
 		private void printBytes(byte[] bytes) {
-			StringBuilder ss = new StringBuilder();
-			for (int i = 0; i < bytes.length; i++) {
-				byte b = bytes[i];
-				ss.append(b);
-				if(i!=bytes.length-1){
-					ss.append(",");
-				}
-			}
+			String ss = Util.bytesToHex(bytes);
 			LOGGER.info("bytes==" + ss);
 		}
 
-		public byte[] input2byte(InputStream inStream) throws IOException {
-			int count = 0;
-			while (count == 0) {
-				count = inStream.available();
+		private byte[] udpBytes() {
+			// TODO Auto-generated method stub
+			String hexStringUdp = "4002DDB436646F6D61696E82726411283665703D6E7463076C743D333630300C65743D506F7765724E6F646508643D646F6D61696EFF3C2F6E772F706970616464723E3B63743D2230223B72743D226E733A763661646472223B69663D22636F72652373222C3C2F6465762F6D66673E3B63743D2230223B72743D226970736F3A6465762D6D6667223B69663D22222C3C2F7077722F302F72656C3E3B6F62733B63743D2230223B72743D226970736F3A7077722D72656C223B69663D22222C3C2F6465762F6D646C3E3B63743D2230223B72743D226970736F3A6465762D6D646C223B69663D22222C3C2F6465762F6261743E3B6F62733B63743D2230223B72743D226970736F3A6465762D626174223B69663D22222C3C2F7077722F302F773E3B6F62733B63743D2230223B72743D226970736F3A7077722D77223B69663D22222C3C2F6E772F6970616464723E3B63743D2230223B72743D226E733A763661646472223B69663D22636F72652373222C3C2F73656E2F74656D703E3B6F62733B63743D2230223B72743D227563756D3A43656C223B69663D22222C3C2F6E772F65726970616464723E3B63743D2230223B72743D226E733A763661646472223B69663D22636F72652373222C3C2F6E772F70727373693E3B63743D2230223B72743D226E733A72737369223B69663D22636F7265237322";
+			byte[] bytes = Util.hexStringToBytes(hexStringUdp);
+			return bytes;
+		}
+
+		public byte[] input2byte(InputStream inStream) {
+			try {
+				int count = 0;
+				while (count == 0) {
+					count = inStream.available();
+				}
+				byte[] b = new byte[count];
+				inStream.read(b);
+				// inStream.close();
+				return b;
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-			byte[] b = new byte[count];
-			inStream.read(b);
-			// inStream.close();
-			return b;
+			return null;
 		}
 	}
 
@@ -248,17 +262,19 @@ public class TCPConnector implements Connector {
 			byte[] bytes = raw.getBytes();
 			OutputStream outputStream = clientConnection.getOutputStream();
 			outputStream.write(bytes);
-			
-			if(outputStream !=null){
+
+			if (outputStream != null) {
 				try {
+					LOGGER.info("close outputStream");
 					outputStream.close();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
-			if(clientConnection!=null){
+			if (clientConnection != null) {
 				try {
-					clientConnection.close();
+					LOGGER.info("close clientConnection");
+					// clientConnection.close();
 				} catch (Exception e) {
 				}
 			}
