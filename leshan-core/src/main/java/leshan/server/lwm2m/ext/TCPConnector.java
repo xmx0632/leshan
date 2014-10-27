@@ -174,7 +174,7 @@ public class TCPConnector implements Connector {
 		 */
 		public void run() {
 			LOGGER.config("Start " + getName());
-			while (running) {
+//			while (running) {
 				try {
 					work();
 				} catch (Throwable t) {
@@ -183,7 +183,7 @@ public class TCPConnector implements Connector {
 					else
 						LOGGER.info(getName() + " has successfully stopped");
 				}
-			}
+//			}
 		}
 
 		/**
@@ -203,8 +203,8 @@ public class TCPConnector implements Connector {
 
 		protected void work() throws IOException {
 
-//			byte[] bytes = input2byte(clientConnection.getInputStream());
-			byte[] bytes = udpBytes();
+			byte[] bytes = input2byte(clientConnection.getInputStream());
+//			byte[] bytes = udpBytes();
 			printBytes(bytes);
 			RawData msg = new RawData(bytes);
 			InetAddress inetAddress = clientConnection.getInetAddress();
@@ -239,7 +239,7 @@ public class TCPConnector implements Connector {
 				}
 				byte[] b = new byte[count];
 				inStream.read(b);
-				// inStream.close();
+//				 inStream.close();
 				return b;
 			} catch (Exception e) {
 				e.printStackTrace();
