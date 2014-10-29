@@ -79,33 +79,9 @@ public class TCPConnector implements Connector {
 		// if localAddr is null or port is 0, the system decides
 		tcpServerSocket = new ServerSocket(localAddr.getPort());
 		this.running = true;
-		while (true) {
-			System.out.println("start licensing on " + localAddr.getPort());
-			Socket connectionSocket = tcpServerSocket.accept();
-			System.out.println("new client connecting");
-
-			try {
-				Receiver receiver = new Receiver("TCP-Receiver " + localAddr, connectionSocket);
-				Sender sender = new Sender("TCP-Sender " + localAddr, connectionSocket);
-				receiver.start();
-				sender.start();
-
-				receiver.join();
-				sender.join();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} finally {
-				if (connectionSocket != null) {
-					try {
-						connectionSocket.close();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			}
-
-		}
+		
+		TCPMain tcpMain = new TCPMain();
+		tcpMain.start();
 	}
 
 	@Override
@@ -192,6 +168,42 @@ public class TCPConnector implements Connector {
 		 *             the exception to be properly logged
 		 */
 		protected abstract void work() throws Exception;
+	}
+	
+	private class TCPMain extends Worker {
+		
+		private TCPMain( ) {
+			super("TCPMain");
+		}
+		
+		protected void work () throws IOException{
+			while (true) {
+				System.out.println("start licensing on " + localAddr.getPort());
+				Socket connectionSocket = tcpServerSocket.accept();
+				System.out.println("new client connecting");
+
+				try {
+					Receiver receiver = new Receiver("TCP-Receiver " + localAddr, connectionSocket);
+					Sender sender = new Sender("TCP-Sender " + localAddr, connectionSocket);
+					receiver.start();
+					sender.start();
+
+					receiver.join();
+					sender.join();
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					if (connectionSocket != null) {
+						try {
+							connectionSocket.close();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				}
+
+			}
+		}
 	}
 
 	private class Receiver extends Worker {
