@@ -7,6 +7,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -79,7 +80,7 @@ public class TCPConnector implements Connector {
 		// if localAddr is null or port is 0, the system decides
 		tcpServerSocket = new ServerSocket(localAddr.getPort());
 		this.running = true;
-		
+
 		TCPMain tcpMain = new TCPMain();
 		tcpMain.start();
 	}
@@ -116,7 +117,40 @@ public class TCPConnector implements Connector {
 	public void send(RawData msg) {
 		if (msg == null)
 			throw new NullPointerException();
-		outgoing.add(msg);
+
+		System.out.println("==== client send tcp request ====");
+
+		Socket clientSocket = null;
+		OutputStream outputStream = null;
+		try {
+			clientSocket = new Socket("127.0.0.1", 5686);
+
+			outputStream = clientSocket.getOutputStream();
+			if (outputStream != null) {
+				byte[] bytes = msg.getBytes();
+				outputStream.write(bytes);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				LOGGER.info("close outputStream");
+				if (outputStream != null) {
+					outputStream.close();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			if (clientSocket != null) {
+				try {
+					clientSocket.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		// outgoing.add(msg);
 	}
 
 	@Override
@@ -151,16 +185,16 @@ public class TCPConnector implements Connector {
 		 */
 		public void run() {
 			LOGGER.config("Start " + getName());
-//			while (running) {
-				try {
-					work();
-				} catch (Throwable t) {
-					if (running)
-						LOGGER.log(Level.WARNING, "Exception \"" + t + "\" in thread " + getName() + ": running=" + running, t);
-					else
-						LOGGER.info(getName() + " has successfully stopped");
-				}
-//			}
+			// while (running) {
+			try {
+				work();
+			} catch (Throwable t) {
+				if (running)
+					LOGGER.log(Level.WARNING, "Exception \"" + t + "\" in thread " + getName() + ": running=" + running, t);
+				else
+					LOGGER.info(getName() + " has successfully stopped");
+			}
+			// }
 		}
 
 		/**
@@ -169,14 +203,14 @@ public class TCPConnector implements Connector {
 		 */
 		protected abstract void work() throws Exception;
 	}
-	
+
 	private class TCPMain extends Worker {
-		
-		private TCPMain( ) {
+
+		private TCPMain() {
 			super("TCPMain");
 		}
-		
-		protected void work () throws IOException{
+
+		protected void work() throws IOException {
 			while (true) {
 				System.out.println("start licensing on " + localAddr.getPort());
 				Socket connectionSocket = tcpServerSocket.accept();
@@ -217,7 +251,7 @@ public class TCPConnector implements Connector {
 		protected void work() throws IOException {
 
 			byte[] bytes = input2byte(clientConnection.getInputStream());
-//			byte[] bytes = udpBytes();
+			// byte[] bytes = udpBytes();
 			printBytes(bytes);
 			RawData msg = new RawData(bytes);
 			InetAddress inetAddress = clientConnection.getInetAddress();
@@ -252,7 +286,7 @@ public class TCPConnector implements Connector {
 				}
 				byte[] b = new byte[count];
 				inStream.read(b);
-//				 inStream.close();
+				// inStream.close();
 				return b;
 			} catch (Exception e) {
 				e.printStackTrace();
