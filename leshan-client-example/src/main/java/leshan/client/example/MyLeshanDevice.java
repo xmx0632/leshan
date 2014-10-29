@@ -39,10 +39,9 @@ import java.util.Random;
 import java.util.TimeZone;
 import java.util.UUID;
 
-import leshan.client.lwm2m.LwM2mClient;
 import leshan.client.lwm2m.MyLwM2mClient;
 import leshan.client.lwm2m.exchange.LwM2mExchange;
-import leshan.client.lwm2m.register.RegisterUplink;
+import leshan.client.lwm2m.register.MyRegisterUplink;
 import leshan.client.lwm2m.resource.LwM2mClientObjectDefinition;
 import leshan.client.lwm2m.resource.SingleResourceDefinition;
 import leshan.client.lwm2m.resource.integer.IntegerLwM2mExchange;
@@ -63,11 +62,11 @@ import leshan.client.lwm2m.response.OperationResponse;
 public class MyLeshanDevice {
     private static final int TIMEOUT_MS = 2000;
     private static String deviceLocation;
-    private static RegisterUplink registerUplink;
+    private static MyRegisterUplink registerUplink;
 
     public static void main(final String[] args) {
     	boolean isTcp = true;
-		new MyLeshanDevice("127.0.0.1", 55663, "127.0.0.1", 5683, isTcp);
+		new MyLeshanDevice("127.0.0.1", 55663, "127.0.0.1", 5686, isTcp);
     	
 //        if (args.length < 4) {
 //            System.out
@@ -81,11 +80,14 @@ public class MyLeshanDevice {
             final int serverPort, boolean isTcp) {
         final LwM2mClientObjectDefinition objectDevice = createObjectDefinition();
         final MyLwM2mClient client = new MyLwM2mClient(isTcp, objectDevice);
-
+        System.out.println("new MyLwM2mClient");
         // Connect to the server provided
         final InetSocketAddress clientAddress = new InetSocketAddress(localHostName, localPort);
         final InetSocketAddress serverAddress = new InetSocketAddress(serverHostName, serverPort);
-        registerUplink = client.startRegistration(clientAddress, serverAddress);
+        System.out.println("startTcpRegistration");
+        registerUplink = client.startTcpRegistration(clientAddress, serverAddress);
+        
+        System.out.println("registerUplink.register");
         final OperationResponse operationResponse = registerUplink.register(UUID.randomUUID().toString(),
                 new HashMap<String, String>(), TIMEOUT_MS);
 

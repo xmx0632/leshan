@@ -80,6 +80,7 @@ public class TCPConnector implements Connector {
 		tcpServerSocket = new ServerSocket(localAddr.getPort());
 		this.running = true;
 		while (true) {
+			System.out.println("start licensing on " + localAddr.getPort());
 			Socket connectionSocket = tcpServerSocket.accept();
 			System.out.println("new client connecting");
 

@@ -42,18 +42,17 @@ import org.eclipse.californium.core.coap.MessageObserver;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.CoAPEndpoint;
-import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.Exchange;
 
-public abstract class Uplink {
+public abstract class MyUplink {
 
     private static final String MESSAGE_BAD_GATEWAY = "Bad Gateway on Async Callback";
     private static final String MESSAGE_GATEWAY_TIMEOUT = "Gateway Timed Out on Asynch Callback";
     private static final String MESSAGE_INTERRUPTED = "Endpoint Interrupted While Waiting for Sync Response";
-    protected final Endpoint origin;
+    protected final CoAPEndpoint origin;
     private final InetSocketAddress destination;
 
-    public Uplink(final InetSocketAddress destination, final Endpoint origin) {
+    public MyUplink(final InetSocketAddress destination, final CoAPEndpoint origin) {
         if (destination == null || origin == null) {
             throw new IllegalArgumentException("Destination and/or Origin cannot be null.");
         }
@@ -62,7 +61,7 @@ public abstract class Uplink {
         this.origin = origin;
     }
 
-    protected final void checkStarted(final Endpoint endpoint) {
+    protected final void checkStarted(final CoAPEndpoint endpoint) {
         if (!endpoint.isStarted()) {
             try {
                 endpoint.start();
