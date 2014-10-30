@@ -66,7 +66,8 @@ public class MyLeshanDevice {
 
     public static void main(final String[] args) {
     	boolean isTcp = true;
-		new MyLeshanDevice("127.0.0.1", 55663, "127.0.0.1", 5686, isTcp);
+//		new MyLeshanDevice("127.0.0.1", 55663, "127.0.0.1", 5686, isTcp);
+		new MyLeshanDevice("135.251.27.171", 55663, "135.251.218.22", 5686, isTcp);
     	
 //        if (args.length < 4) {
 //            System.out
